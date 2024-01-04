@@ -14,8 +14,7 @@ function minDistance(dist, V, sptSet) {
 }
 
 function printSolutionDijkstra(trace, V, graph, src, dest) {
-    //document.write("Vertex \t\t Distance from Source \t\t Path<br>");
-
+    const textArea = document.getElementById("outputArea");
     let nodes = new vis.DataSet();
     let edges = new vis.DataSet();
 
@@ -32,33 +31,42 @@ function printSolutionDijkstra(trace, V, graph, src, dest) {
     }
 
     //for (let i = 0; i < V; i++) {
-    //console.log(i + " \t\t " + dist[i] + " \t\t ");
 
     // Trace back to construct the path
     let path = [];
     let vertex = dest;
+    let sum = 0;
     if (trace[vertex] === undefined) {
         alert('Không tìm thấy được đi ngắn nhất từ ' + src + ' đến ' + dest);
+        textArea.value = 'Không tìm thấy được đi ngắn nhất từ ' + src + ' đến ' + dest;
+        //console.log('1: ' + textArea.value);
     }
     else {
+        textArea.value = 'Đường đi ngắn nhất từ đỉnh ' + src + ' đến đỉnh ' + dest + ' là: \n';
+        //console.log('2: ' +textArea.value);
         while (vertex !== undefined) {
             path.push(vertex);
             if (trace[vertex] !== undefined) {
                 if (check[trace[vertex]][vertex] === 0) {
-                    console.log('vertex = ' + vertex + ' trace = ' + trace[vertex] + ' ' + graph[trace[vertex]][vertex]);
+                    //console.log('vertex = ' + vertex + ' trace = ' + trace[vertex] + ' ' + graph[trace[vertex]][vertex]);
                     edges.add({ from: trace[vertex], to: vertex, label: graph[trace[vertex]][vertex].toString() });
                     check[trace[vertex]][vertex] = 1;
+                    sum += graph[trace[vertex]][vertex];
                 }
             }
             vertex = trace[vertex];
         }
         //console.log(path.reverse().join(" -> "));
+        textArea.value += path.reverse().join(' -> ') + ' ';
+        //console.log('3: ' + textArea.value);
+        textArea.value += '\nĐộ dài đường đi ngắn nhất là: ' + sum;
+        //console.log('4: ' + textArea.value);
     }
 
     for (let i = 0; i < V; i++) {
         for (let j = 0; j < V; j++) {
             if (check[i][j] === 0 && graph[i][j] !== 0) {
-                console.log('i = ' + i + ' j = ' + j + ' ' + graph[i][j]);
+                //console.log('i = ' + i + ' j = ' + j + ' ' + graph[i][j]);
                 edges.add({ from: i, to: j, label: graph[i][j].toString(), color: 'black' });
             }
         }
@@ -127,21 +135,25 @@ function dijkstra(graph, V, src, dest) {
     printSolutionDijkstra(trace, V, graph, src, dest);
 }
 
-function printSolutionBellmanFord(graph, dis, V, E) {
+function printSolutionBellmanFord(graph, dis, V, E, src) {
+    const textArea = document.getElementById("outputArea");
     for (let i = 0; i < E; i++) {
         for (let u = 0; u < V; u++) {
             for (let v = 0; v < V; v++) {
                 if (graph[u][v] !== 0) {
                     if ((dis[u] != Number.MAX_VALUE) && (dis[u] + graph[u][v] < dis[v]))
-                        document.write("Graph contains negative" + " weight cycle<br>");
+                        console.log("Graph contains negative" + " weight cycle");
                 }
             }
         }
     }
 
-    document.write("Vertex Distance from Source<br>");
-    for (let i = 0; i < V; i++)
-        document.write(i + "   " + dis[i] + "<br>");
+    textArea.value = 'Khoảng cách ngắn nhất từ đỉnh: ' + src + ' đến các đỉnh khác là: \n';
+    for (let i = 0; i < V; i++) {
+        if (dis[i] !== 0) {
+            textArea.value += 'Đỉnh ' + i + ':   ' + dis[i] + '\n';
+        }
+    }
 }
 
 function BellmanFord(graph, V, E, src) {
@@ -162,22 +174,23 @@ function BellmanFord(graph, V, E, src) {
             }
         }
     }
-    printSolutionBellmanFord(graph, dis, V, E);
+    printSolutionBellmanFord(graph, dis, V, E, src);
 }
 
 function printSolutionFloyd(dist, V) {
-    document.write("Following matrix shows the shortest " + "distances between every pair of vertices<br>");
+    const textArea = document.getElementById("outputArea");
+    textArea.value = 'Ma trận khoảng cách ngắn nhất giữa mọi cặp đỉnh là: \n';
     for (let i = 0; i < V; i++) {
         for (let j = 0; j < V; j++) {
             console.log('i = ' + i + 'j = ' + j + 'dist = ' + dist[i][j]);
             if (dist[i][j] === Number.MAX_VALUE) {
-                document.write("    ∞   ");
+                textArea.value += '\t∞\t';
             }
             else {
-                document.write("    " + dist[i][j] + "   ");
+                textArea.value += '\t' + dist[i][j] + '\t';
             }
         }
-        document.write("<br>");
+        textArea.value += '\n';
     }
 }
 
@@ -221,13 +234,12 @@ let E;
 
 // Sinh ra đồ thị mới có số đỉnh, số cạnh và trọng số chạy từ Min -> Max theo người dùng nhập
 function newGraph() {
-    console.log("Test!");
     // Lấy giá trị của số đỉnh, số cạnh và trọng số Min, Max của người dùng nhập
     const vertex = Number(document.getElementById("Vertex").value);
     const edge = Number(document.getElementById("Edge").value);
     const weightMin = Number(document.getElementById("MinWeight").value);
     const weightMax = Number(document.getElementById("MaxWeight").value);
-    const textArea = document.querySelector("textarea");
+    const textArea = document.getElementById("inputArea");
 
     V = vertex;
     E = edge;
@@ -297,7 +309,7 @@ function newGraph() {
         textArea.value += (u - 1) + ' ' + (v - 1) + ' ' + w + '\n'; // Ghi các dòng tiếp theo
 
         edges.add({ from: (u - 1), to: (v - 1), label: w.toString() }); // Thêm cạnh u,v với trọng số w vào data
-        console.log('u = ' + (u - 1) + '; v = ' + (v - 1) + '; w = ' + w + '; Min = ' + weightMin + '; Max = ' + weightMax);
+        //console.log('u = ' + (u - 1) + '; v = ' + (v - 1) + '; w = ' + w + '; Min = ' + weightMin + '; Max = ' + weightMax);
     }
 
     for (let i = 0; i < vertex; i++) {
@@ -483,14 +495,21 @@ button.addEventListener("click", () => {
     } else if (selectedValue === "3") {
         floyd(Graph, V);
     }
+    const link = document.createElement("a");
+    const content = document.getElementById("outputArea").value;
+    console.log("test: " + content);
+    const file = new Blob([content], { type: 'text/plain' });
+    link.href = URL.createObjectURL(file);
+    link.download = "output.txt";
+    link.click();
+    URL.revokeObjectURL(link.href);
     //});
 });
 
 // Thêm event cho Lưu File Button khi bấm vào sẽ sinh data cho input file rồi tự tải xuống
 const downloadInputFile = () => {
     const link = document.createElement("a");
-    writeGraph(Graph, V, E);
-    const content = document.querySelector("textarea").value;
+    const content = document.getElementById("inputArea").value;
     const file = new Blob([content], { type: 'text/plain' });
     link.href = URL.createObjectURL(file);
     link.download = "input.txt";
@@ -498,18 +517,12 @@ const downloadInputFile = () => {
     URL.revokeObjectURL(link.href);
 };
 
-// Thêm event cho Lưu File Button khi bấm vào sẽ sinh data cho input file rồi tự tải xuống
-const downloadOutputFile = () => {
-    const link = document.createElement("a");
-    writeGraph(Graph, V, E);
-    const content = document.querySelector("textarea").value;
-    const file = new Blob([content], { type: 'text/plain' });
-    link.href = URL.createObjectURL(file);
-    link.download = "output.txt";
-    link.click();
-    URL.revokeObjectURL(link.href);
-};
-
 // Khởi tạo để kèm dòng note dưới button bằng bootstrap
 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+const inputArea = document.getElementById("inputArea");
+const outputArea = document.getElementById("outputArea");
+
+inputArea.style.display = "none";
+outputArea.style.display = "none";
